@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Choose Vegetables</title>
+    <style>
+        .choose_veg-button-container {
+            text-align: center;
+        }
+        .choose_veg-choice-button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            cursor: pointer;
+            background-color: #0074d9;
+            color: white;
+            text-align: center;
+        }
+        .choose_veg-choice-button img {
+            width: 300px; /* Adjust the width as needed */
+            height: 300px; /* Adjust the height as needed */
+        }
+        body {
+            background-image: url('state_veg_background.jpg');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: 100% 100%;
+        }
+        .choose_veg-centered-text{
+            text-align: center;
+        }
+       
+    </style>
+</head>
+<body>
+    <div class="choose_veg-centered-text">
+        <h1><FONT COLOR=white>_______________Add your vegetables</h1>
+    </div>
+    <div class="choose_veg-button-container">
+        <button class="choose_veg-choice-button" id="tomatoButton">
+            <h2>Tomato</h2>
+            <img src="tomato.jpg" alt="Tomato">
+        </button>
+        <button class="choose_veg-choice-button" id="onionButton">
+            <h2>Onion</h2>
+            <img src="onion.jpg" alt="Onion">
+        </button>
+        <button class="choose_veg-choice-button" id="pickleButton">
+            <h2>Pickle</h2>
+            <img src="pickle.jpg" alt="Pickle">
+        </button>
+        <button class="choose_veg-choice-button" id="lettuceButton">
+            <h2>Lettuce</h2>
+            <img src="lettuce.jpg" alt="Lettuce">
+        </button>
+    </div>
+   
+    <button id="submitButton" style="display: none; width: 200px; height: 50px;" onclick="redirectToResultPage()">Submit</button>
+
+
+    <script src="state_veg.js"></script>
+</body>
+</html>

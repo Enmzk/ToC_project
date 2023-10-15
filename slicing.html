@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #image-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+        }
+        canvas {
+            border: none; /* Remove the canvas border */
+            background: transparent; /* Make the canvas background transparent */
+        }
+        .completed-image {
+            position: absolute;
+            top: 0;
+            max-height: 100%;
+        }
+        .completed-image.left {
+            left: 0;
+        }
+        .completed-image.right {
+            right: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="image-container">
+        <img src="tomato_round.jpg" alt="Tomato" id="tomato-image" style="max-width: 100%; max-height: 100%;">
+    </div>
+    <canvas id="canvas" width="500" height="400"></canvas>
+    <div id="status" style="text-align: center; position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);">Slice a tomato</div>
+    <button id="tryAgain" style="display: none;">Try Again</button>
+    <button id="next" style="display: none;">Next</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function(){
+            document.body.style.backgroundImage = 'url(\'state_bread_background.png\')'
+            })
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const dashLength = 10;
+        const gapLength = 5;
+        const clickTolerance = 30;
+        let mouseX = 0;
+        let mouseY = 0;
+        let isTracking = false;
+        let hasStartedTracking = false;
+        let hasCompleted = false;
+        const tryAgainButton = document.getElementById('tryAgain');
+        const nextButton = document.getElementById('next');
+
+        function redirectToResultPage() {
+            document.getElementById('transition-container').style.animation = 'sliding-left-in 1s forwards'
+            setTimeout(function(){
+            window.location.href = 'minigame_bread.html';
+            }, 1000)
+        }
+
+        function drawDashedLine() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.setLineDash([dashLength, gapLength]);
+            ctx.lineDashOffset = -Date.now() / 10;
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height / 2);
+            ctx.lineTo(canvas.width, canvas.height / 2);
+            ctx.stroke();
+        }
+
+        function updateMousePosition(event) {
+            const rect = canvas.getBoundingClientRect();
+            mouseX = event.clientX - rect.left;
+            mouseY = event.clientY - rect.top;
+        }
+
+        function isWithinTolerance() {
+            return mouseY >= canvas.height / 2 - clickTolerance &&
+                mouseY <= canvas.height / 2 + clickTolerance;
+        }
+
+        function showCompletedImages() {
+            if (hasCompleted) {
+                const leftImage = document.createElement('img');
+                leftImage.src = 'tomato_slice.jpg';
+                leftImage.alt = 'Tomato Slice';
+                leftImage.className = 'completed-image left';
+                document.body.appendChild(leftImage);
+
+                const rightImage = document.createElement('img');
+                rightImage.src = 'tomato_slice.jpg';
+                rightImage.alt = 'Tomato Slice';
+                rightImage.className = 'completed-image right';
+                document.body.appendChild(rightImage);
+            }
+        }
+
+        canvas.addEventListener('mousemove', (event) => {
+            if (isTracking) {
+                updateMousePosition(event);
+                checkCompletion();
+            }
+        });
+
+        canvas.addEventListener('mousedown', (event) => {
+            if (event.button === 0) {
+                if (tryAgainButton.style.display === 'none' && nextButton.style.display === 'none') {
+                    updateMousePosition(event);
+                    if (mouseX >= 0 && mouseX <= canvas.width && isWithinTolerance()) {
+                        isTracking = true;
+                        hasStartedTracking = true;
+                    }
+                }
+            }
+        });
+
+        canvas.addEventListener('mouseup', (event) => {
+            if (isTracking) {
+                isTracking = false;
+                releaseLeftClick();
+                checkCompletion();
+                showCompletedImages();
+            }
+        });
+
+        tryAgainButton.addEventListener('click', () => {
+            tryAgainButton.style.display = 'none';
+            hasStartedTracking = false;
+            hasCompleted = false;
+            releaseLeftClick();
+            document.getElementById('status').textContent = 'Slice a tomato';
+            canvas.style.pointerEvents = 'auto';
+        });
+
+        nextButton.addEventListener('click', () => {
+            nextButton.style.display = 'none';
+            hasStartedTracking = false;
+            hasCompleted = false;
+            document.getElementById('status').textContent = 'Slice a tomato';
+            canvas.style.pointerEvents = 'auto';
+        });
+
+        function releaseLeftClick() {
+            const mouseUpEvent = new MouseEvent('mouseup', { button: 0 });
+            canvas.dispatchEvent(mouseUpEvent);
+        }
+
+        function checkCompletion() {
+            const dashlineLength = canvas.width; // Length of the dashline
+            const completionThreshold = 0.95; // 95% completion threshold
+
+            if (hasStartedTracking && isTracking && mouseX >= dashlineLength * completionThreshold) {
+                hasCompleted = true;
+                document.getElementById('status').textContent = 'Completed';
+                nextButton.style.display = 'block';
+                canvas.style.pointerEvents = 'none';
+                showCompletedImages();
+                redirectToResultPage();
+            } else if (!isWithinTolerance()) {
+                document.getElementById('status').textContent = 'Failed';
+                tryAgainButton.style.display = 'block';
+                canvas.style.pointerEvents = 'none';
+            }
+        }
+
+        function gameLoop() {
+            drawDashedLine();
+            if (hasStartedTracking && !hasCompleted && isTracking && mouseX >= 0 && mouseX <= canvas.width) {
+                ctx.fillStyle = 'red';
+                ctx.beginPath();
+                ctx.arc(mouseX, canvas.height / 2, 5, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
